@@ -1,0 +1,32 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.5448213033335552 0.507959264810983 0.6671934747332382 2.02864484885045
+  position 0.08971603008415463 -0.8084080223329384 3.621184554858371
+}
+Background {
+  skyColor [
+    0.4 0.7 1
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction 0.1 -0.5 0.3
+}
+RectangleArena {
+  floorSize 2.5 2.5
+}
+E-puck {
+  hidden position_0_0 388.446539678867
+  hidden position_0_1 668.610526100909
+  hidden rotation_1 0 -1 0 1.1109493662673637
+  hidden rotation_2 0 1 0 2.592883539872889
+  translation 0.3950944629380026 0.2716076381731077 -6.518410630396501e-05
+  rotation -0.005060659758788726 0.00028425644483094176 0.9999871543780346 3.042220696248824
+  controller "robotito-controller"
+}
