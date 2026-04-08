@@ -1,20 +1,36 @@
 # Laboratorio de Robótica: Control de Movimientos en Webots
 
-Este repositorio contiene la implementación de controladores para un robot móvil en el simulador **Webots**. El objetivo es vomprender el comportamiento cinematico de un robot movil diferencial mediante una simulacion interactiva en Webots, donde los actuadores
-(motores de las ruedas) controlan el movimiento del robot.
+Este repositorio contiene la implementación de controladores para un robot móvil diferencial en el simulador **Webots**. El objetivo es comprender el comportamiento cinemático de un sistema diferencial mediante una simulación interactiva donde los actuadores (motores de las ruedas) controlan la trayectoria del robot.
 
+## Fundamentos Cinemáticos
+El movimiento del robot se rige por las ecuaciones de la cinemática diferencial. Siendo $r$ el radio de las ruedas, $L$ la distancia entre ellas, y $V_l, V_r$ las velocidades angulares de las ruedas izquierda y derecha:
 
-## Contenido del Proyecto
+* **Velocidad Lineal ($v$):** $v = \frac{r(V_r + V_l)}{2}$
+* **Velocidad Angular ($\omega$):** $\omega = \frac{r(V_r - V_l)}{L}$
+
+---
+
+## Estructura del Proyecto
+```text
+├── controllers/
+│   └── robot_controller/
+│       └── robot_controller.py  # Lógica de control en Python
+├── worlds/
+│   └── robot_world.wbt          # Escena y configuración del mundo
+├── videos/                      # Gifs demostrativos de las trayectorias
+└── README.md
+
+## Contenido de la simulacion. 
 El proyecto incluye la simulación de las siguientes trayectorias:
-1. **Línea Recta:** Desplazamiento uniforme hacia adelante.
-2. **Curva:** Movimiento con distinto radio de giro.
-3. **Giro sobre su propio eje:** Rotación estática (velocidades opuestas en ruedas).
-4. **Círculo:** Trayectoria circular continua.
+1. **Línea Recta:** Desplazamiento uniforme hacia adelante ($V_l = V_r$).
+2. **Curva:** Movimiento con distinto radio de giro ($V_l \neq V_r$)..
+3. **Giro sobre su propio eje:** Rotación estática (velocidades opuestas en ruedas) ($V_l = -V_r$).
+4. **Círculo:** Trayectoria circular continua ($V_l, V_r$ constantes y distintos de cero).
 
 ## Requisitos
 * **Simulador:** [Webots R2023b](https://cyberbotics.com/) o superior.
-* **Lenguaje:** Python 3.x.
-* **Robot utilizado:** [Nombre del robot].
+* **Lenguaje:** Python 3.14
+* **Robot utilizado:** Prototipo de robot diferencial ("Robotito").
 
 ## Instrucciones de Uso
 1. Clona este repositorio:
