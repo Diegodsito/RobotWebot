@@ -8,18 +8,6 @@ El movimiento del robot se rige por las ecuaciones de la cinemática diferencial
 * **Velocidad Lineal ($v$):** $v = \frac{r(V_r + V_l)}{2}$
 * **Velocidad Angular ($\omega$):** $\omega = \frac{r(V_r - V_l)}{L}$
 
----
-
-## Estructura del Proyecto
-```text
-├── controllers/
-│   └── robot_controller/
-│       └── robot_controller.py  # Lógica de control en Python
-├── worlds/
-│   └── robot_world.wbt          # Escena y configuración del mundo
-├── videos/                      # Gifs demostrativos de las trayectorias
-└── README.md
-
 ## Contenido de la simulacion. 
 El proyecto incluye la simulación de las siguientes trayectorias:
 1. **Línea Recta:** Desplazamiento uniforme hacia adelante ($V_l = V_r$).
@@ -33,6 +21,7 @@ El proyecto incluye la simulación de las siguientes trayectorias:
 * **Robot utilizado:** Prototipo de robot diferencial ("Robotito").
 
 ## Instrucciones de Uso
+
 1. Clona este repositorio:
    ```bash git clone [https://github.com/Diegodsito/RobotWebot.git](https://github.com/Diegodsito/RobotWebot.git)
    
@@ -42,12 +31,12 @@ El proyecto incluye la simulación de las siguientes trayectorias:
 
 3.Presiona el botón Play en el simulador.
 
-## Conclusiones
+## Simulaciones de movimiento
 
 1. ¿Que ocurre cuando ambas ruedas tienen la misma velocidad?
    
    Como hemos podido observar en las simulaciones, cuando el robot tiene la misma velocidad **Vl = Vr** el robot se moviliza en linea recta.
-   ### Retto
+   ### Recto
    ![Linea Recta](videos/linearecta.gif)
    
 2. ¿Como cambia la trayectoria cuando las velocidades son diferentes?
@@ -67,5 +56,5 @@ El proyecto incluye la simulación de las siguientes trayectorias:
 
    Se necesita que vr ≠ vl pero ambas positivas (o negativas) y constantes. Esto genera una ω constante y una v constante, resultando en una trayectoria circular de radio.
    Mientras más parecidas sean las velocidades, mayor será el radio del círculo.
-   ### Circulo
+   ### Círculo
    ![Circulo](videos/circulo.gif)
