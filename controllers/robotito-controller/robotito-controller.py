@@ -37,7 +37,7 @@ def circulo(v1, v2):
 
 def cuadrado(tiempo_local):
     lado = 5.0
-    giro = 1.0  # da calibrare
+    giro = 1.0  # a calibrar
 
     ciclo = lado + giro
     fase = tiempo_local % ciclo
@@ -87,7 +87,7 @@ while robotito.step(timestep) != -1:
     tiempo_local = tiempo - tiempo_inicio
 
     if pausa:
-        # robot fermo
+        # robot detenido
         motor_izq.setVelocity(0)
         motor_der.setVelocity(0)
 
@@ -100,7 +100,7 @@ while robotito.step(timestep) != -1:
         
         v_izq, v_der = ejecutar_accion(nombre, tiempo_local)
 
-        # applica velocità con rumore
+        # aplica velocidad con ruido
         motor_izq.setVelocity(v_izq + noise_left)
         motor_der.setVelocity(v_der + noise_right)
 
