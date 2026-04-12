@@ -70,6 +70,99 @@ A partir de estos parámetros se obtienen las velocidades del robot:
 
 ---
 
+## Controlador
+
+El controlador está implementado en Python y sigue una **arquitectura de secuencia de comportamientos**: ejecuta cada movimiento durante un tiempo determinado, hace una pausa breve, y pasa al siguiente. Se aplica un pequeño ruido aleatorio a las velocidades para simular imperfecciones reales del motor.
+
+Las funciones de movimiento traducen directamente las condiciones cinemáticas a velocidades de rueda:
+
+| Función | $V_l$ | $V_r$ | Resultado |
+|---------|:-----:|:-----:|-----------|
+| `avanzar(v)` | $v$ | $v$ | Línea recta |
+| `curva(v1, v2)` | $v_1$ | $v_2$ | Curva hacia el lado más lento |
+| `girar(v)` | $-v$ | $v$ | Giro sobre el propio eje |
+| `circulo(v1, v2)` | $v_1$ | $v_2$ | Trayectoria circular continua |
+
+<details>
+<summary>Ver código completo del controlador</summary>
+
+```python
+from controller import Robot
+import random
+
+robotito = Robot()
+timestep = int(robotito.getBasicTimeStep())
+
+motor_izq = robotito.getDevice("left wheel motor")
+motor_der = robotito.getDevice("right wheel motor")
+
+motor_izq.setPosition(float('inf'))
+motor_der.setPosition(float('inf'))
+
+def avanzar(v):
+    return v, v
+
+def curva(v1, v2):
+    return v1, v2
+
+def girar(v):
+    return -v, v
+
+def circulo(v1, v2):
+    return v1, v2
+
+def ejecutar_accion(nombre, tiempo_local):
+    if nombre == "curva":
+        return curva(3.5, 2)
+    elif nombre == "recto":
+        return avanzar(3)
+    elif nombre == "giro":
+        return girar(4)
+    elif nombre == "circulo":
+        return circulo(3, 1.5)
+
+acciones = [
+    ("curva",   4.5),
+    ("recto",   7.0),
+    ("giro",   10.0),
+    ("circulo", 12.0),
+]
+
+indice = 0
+tiempo_inicio = 0
+pausa = False
+duracion_pausa = 3
+
+while robotito.step(timestep) != -1:
+    tiempo = robotito.getTime()
+    tiempo_local = tiempo - tiempo_inicio
+
+    noise_left  = random.uniform(-0.1, 0.1)
+    noise_right = random.uniform(-0.1, 0.1)
+
+    if pausa:
+        motor_izq.setVelocity(0)
+        motor_der.setVelocity(0)
+        if tiempo_local > duracion_pausa:
+            pausa = False
+            tiempo_inicio = tiempo
+    else:
+        nombre, duracion = acciones[indice]
+        v_izq, v_der = ejecutar_accion(nombre, tiempo_local)
+
+        motor_izq.setVelocity(v_izq + noise_left)
+        motor_der.setVelocity(v_der + noise_right)
+
+        if tiempo_local > duracion:
+            indice = min(indice + 1, len(acciones) - 1)
+            pausa = True
+            tiempo_inicio = tiempo
+```
+
+</details>
+
+---
+
 ## Simulaciones de movimiento
 
 1. ¿Que ocurre cuando ambas ruedas tienen la misma velocidad?
