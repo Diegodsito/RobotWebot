@@ -66,8 +66,6 @@ A partir de estos parámetros se obtienen las velocidades del robot:
 
 4. **Presiona Play** en el simulador.
 
-> ⚠️ **Nota:** Asegúrate de tener instalada la versión correcta de Webots antes de cargar el mundo.
-
 ---
 
 ## Controlador
