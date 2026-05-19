@@ -21,6 +21,23 @@ motor_der = robotito.getDevice("right wheel motor")
 motor_izq.setPosition(float('inf'))
 motor_der.setPosition(float('inf'))
 
+# sensores de proximidad
+ps_names = ['ps0', 'ps7', 'ps5', 'ps2']
+
+ps = []
+
+for name in ps_names:
+    sensor = robotito.getDevice(name)
+    sensor.enable(timestep)
+    ps.append(sensor)
+
+# encoders
+left_encoder = robotito.getDevice('left wheel sensor')
+right_encoder = robotito.getDevice('right wheel sensor')
+
+left_encoder.enable(timestep)
+right_encoder.enable(timestep)
+
 #tipos de movidas del robotito
 
 def avanzar(v):
@@ -75,10 +92,48 @@ acciones = [
     ("cuadrado", 999),
 
 ]
+robotito.step(timestep)
+prev_left = left_encoder.getValue()
+prev_right = right_encoder.getValue()
+WHEEL_RADIUS = 0.0205
+
+filtered_front = 0
+alpha = 0.7
 
 while robotito.step(timestep) != -1:
 
     tiempo = robotito.getTime()
+    left_pos = left_encoder.getValue()
+    right_pos = right_encoder.getValue()
+
+    delta_left = left_pos - prev_left
+    delta_right = right_pos - prev_right
+    prev_left = left_pos
+    prev_right = right_pos
+
+    left_distance = WHEEL_RADIUS * delta_left
+    right_distance = WHEEL_RADIUS * delta_right
+    robot_advance = (left_distance + right_distance) / 2.0
+
+
+    front_right = ps[0].getValue()
+    front_left = ps[1].getValue()
+    front_measure = (front_left + front_right) / 2.0
+    filtered_front = alpha * filtered_front + (1 - alpha) * front_measure
+
+    left_side = ps[2].getValue()
+    right_side = ps[3].getValue()
+
+    print(
+        f"ADV: {robot_advance*1000:.2f} | "
+        f"FILTERED F: {filtered_front:.2f} | "
+        f"RAW FF: {front_measure:.2f} | "
+        f"FL: {front_left:.2f} | "
+        f"FR: {front_right:.2f} | "
+        f"LS: {left_side:.2f} | "
+        f"RS: {right_side:.2f}",
+        flush=True
+    )
 
     # para aplicar ruidos
     noise_left = random.uniform(-0.1, 0.1)
