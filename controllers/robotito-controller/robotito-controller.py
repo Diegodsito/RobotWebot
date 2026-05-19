@@ -1,169 +1,187 @@
-"""robotito-controller controller."""
+#                ROBOTITO CONTROLLER
 """
-“Se implementó una arquitectura modular basada en secuencia de comportamientos, 
-permitiendo ejecutar acciones de forma ordenada y extensible.”
+Integrantes/Membri:
+
+* Maria Paganetti
+* Ignacia Brahim
+* Diego Alvarado
+* Sean Jamen
+* Ariel Villar
+
 """
-#importes
-        
+#---------------------------------------------------
 from controller import Robot
-import random
+import math
 
 robotito = Robot()
-
-# el tiempo de los step (=! tiempo transcurrido)
+#render == tiempo
 timestep = int(robotito.getBasicTimeStep())
 
-#motor
+
+# --- Modulos ---
+
+#transforma valores de sensor p (e-puck), osea valores de 0 a 4096
+#a valores en metros/cm "reales". Esto es estimado, se puede
+#calibrar mejor. 
+def sensor_a_metros(valor_crudo):
+    if valor_crudo < 50: 
+        #si el valor es muy bajo, asumimos que el obstaculo está 
+        #lejos (ej. 15 cm)
+        return 0.15
+        
+    #aproximación clásica para el e-puck:
+    #a mayor valor crudo, menor es la distancia estimada.
+    try:
+    
+        distancia_metros = 0.4 / (math.sqrt(valor_crudo))
+        
+        #limitamos el rango de lectura lógico del sensor 
+        #máximo 15 cm, mínimo 1 cm
+        return max(0.01, min(0.15, distancia_metros))
+        
+    except ZeroDivisionError:
+        #muy cercano a 0 o 0 es que está muy muy lejos.
+        return 0.15
+        
+#-----------------------------------------------------
+# --- Inicializacion del Hardware ---
 motor_izq = robotito.getDevice("left wheel motor")
 motor_der = robotito.getDevice("right wheel motor")
-
-#pos
 motor_izq.setPosition(float('inf'))
 motor_der.setPosition(float('inf'))
 
-# sensores de proximidad
+#sensores
 ps_names = ['ps0', 'ps7', 'ps5', 'ps2']
 
-ps = []
-
-for name in ps_names:
-    sensor = robotito.getDevice(name)
+#enable por sensor
+ps = [robotito.getDevice(name) for name in ps_names]
+for sensor in ps:
     sensor.enable(timestep)
-    ps.append(sensor)
 
-# encoders
+#encoders
 left_encoder = robotito.getDevice('left wheel sensor')
 right_encoder = robotito.getDevice('right wheel sensor')
-
 left_encoder.enable(timestep)
 right_encoder.enable(timestep)
 
-#tipos de movidas del robotito
-
-def avanzar(v):
-    return v, v
-
-def curva(v1, v2):
-    return v1, v2
-
-def girar(v):
-    return -v, v
-
-def circulo(v1, v2):
-    return v1, v2
-
-def cuadrado(tiempo_local):
-    lado = 5.0
-    giro = 1.0  # a calibrar
-
-    ciclo = lado + giro
-    fase = tiempo_local % ciclo
-
-    if fase < lado:
-        return avanzar(3)
-    else:
-        return girar(2)
-
-def ejecutar_accion(nombre, tiempo_local):
-    if nombre == "curva":
-        return curva(3.5, 2)
-    elif nombre == "recto":
-        return avanzar(3)
-    elif nombre == "giro":
-        return girar(4)
-    elif nombre == "circulo":
-        return circulo(3, 1.5)
-    elif nombre == "cuadrado":
-        return cuadrado(tiempo_local)
-        
-#prog
-
-#cambiar si es necesario
-
-indice = 0
-tiempo_inicio = 0
-pausa = False
-duracion_pausa = 3
-acciones = [
-    ("curva", 4.5),
-    ("recto", 7),   
-    ("giro", 10),
-    ("circulo", 12),
-    ("cuadrado", 999),
-
-]
-robotito.step(timestep)
-prev_left = left_encoder.getValue()
-prev_right = right_encoder.getValue()
+# --- Constantes ---
+#por ahora solo dejaremos el radio de la rueda
 WHEEL_RADIUS = 0.0205
 
-filtered_front = 0
-alpha = 0.7
+# --- Parametros Filtrado Kalman ---
+#En el experimento se van a ir calibrando estos params (To do)
 
+Q = 0.01   #varianza/incertidumbre del encoder (Encoder uncertainty)
+R = 0.1    #varianza de medicion/sensor (Sensor uncertainty)
+P = 1.0    #estimacion inicial del error del sensor (Covariance)
+d_est = 0.5 #distancia inicial estimada (Distance/meters)
+
+# --- Loop Variables ---
+robotito.step(timestep)
+#prev porque debemos estimar la distancia actual en base a eso.
+prev_left = left_encoder.getValue()
+prev_right = right_encoder.getValue()
+
+# --- Main Simulation ---
+#filtrado Kalman
 while robotito.step(timestep) != -1:
-
-    tiempo = robotito.getTime()
+    
+    # 1. leer encoders y estimar distancia (Δd)
     left_pos = left_encoder.getValue()
     right_pos = right_encoder.getValue()
-
+    
+    #entonces la distancia es:
+    #actual - anterior = diferencia.
     delta_left = left_pos - prev_left
     delta_right = right_pos - prev_right
+    
+    #actualizar prev
     prev_left = left_pos
     prev_right = right_pos
-
+    
+    #delta_x esta en radianes
+    #metros == radio rueda * radianes (angulo)
     left_distance = WHEEL_RADIUS * delta_left
     right_distance = WHEEL_RADIUS * delta_right
-    robot_advance = (left_distance + right_distance) / 2.0
-
-
+    
+    #las ruedas se pueden mover de forma distinta.
+    #advance calcula cuanto se mueve el chasis
+    #o el robot "completo". Se promedian.
+    robot_advance = (left_distance + right_distance) / 2.0  #Δd_k
+    
+    # 2. Leer sensores frontales (Measurement z_k)
     front_right = ps[0].getValue()
     front_left = ps[1].getValue()
-    front_measure = (front_left + front_right) / 2.0
-    filtered_front = alpha * filtered_front + (1 - alpha) * front_measure
-
-    left_side = ps[2].getValue()
-    right_side = ps[3].getValue()
-
-    print(
-        f"ADV: {robot_advance*1000:.2f} | "
-        f"FILTERED F: {filtered_front:.2f} | "
-        f"RAW FF: {front_measure:.2f} | "
-        f"FL: {front_left:.2f} | "
-        f"FR: {front_right:.2f} | "
-        f"LS: {left_side:.2f} | "
-        f"RS: {right_side:.2f}",
-        flush=True
-    )
-
-    # para aplicar ruidos
-    noise_left = random.uniform(-0.1, 0.1)
-    noise_right = random.uniform(-0.1, 0.1)
-
-    tiempo_local = tiempo - tiempo_inicio
-
-    if pausa:
-        # robot detenido
-        motor_izq.setVelocity(0)
-        motor_der.setVelocity(0)
-
-        if tiempo_local > duracion_pausa:
-            pausa = False
-            tiempo_inicio = tiempo
-
-    else:
-        nombre, duracion = acciones[indice]
-        
-        v_izq, v_der = ejecutar_accion(nombre, tiempo_local)
-
-        # aplica velocidad con ruido
-        motor_izq.setVelocity(v_izq + noise_left)
-        motor_der.setVelocity(v_der + noise_right)
-
-        # cambio azione
-        if tiempo_local > duracion:
-            indice += 1
-            pausa = True
-            tiempo_inicio = tiempo
-
-            if indice >= len(acciones):
-                indice = len(acciones) - 1
+    
+    #Ignacia
+    """nota: los sensores de e-puck van a retornar un valor muy 
+    alto siestá muy cerca de un obstaculo. 
+    
+    como los valores van de [0, 4096] se necesita una formula 
+    para mapear los valores del sensor a metros (real) (z_k)
+    
+    
+    la formula esta bien; lo que sufre la transformacion es
+    front_left/right:
+    
+    z_k = (front_left + front_right) / 2.0 old formula
+    
+    SE IMPLEMENTA sensor_a_metros asi que se calcula z_k con eso.
+    Leer sensor_a_metros para entender el cambio.
+    
+    """
+    
+    
+    #el promedio de los valores de p (infrarojo) 
+    #se traduce a metros reales
+    
+    valor_crudo_promedio = (front_left + front_right) / 2.0
+    z_k = sensor_a_metros(valor_crudo_promedio) #z_k en metros)
+    
+    # =================================================================
+    # 3. ALGORITMO FILTRO KALMAN (Ignacia)
+    # =================================================================
+    
+    #paso 3.1 -- prediccion (proyectar el estado futuro)
+    #mientras el robot avanza, su distancia al obstaculo disminuye
+    #por el mismo valor.
+    d_pred = d_est - robot_advance 
+    
+    #inseguridad nueva = inseguridad previa + "ruido"
+    P_pred = P + Q
+    
+    #paso 3.2 -- correccion (actualizar estimado con medida del sensor)
+    
+    #sorpresa: lo que los sensores vieron - lo que nosotros calculamos
+    y = z_k - d_pred 
+    
+    #ruido total del sistema: prediccion y (des)confianza sensor
+    
+    S = P_pred + R
+    
+    #ganancia de Kalman. Va de 0 a 1:
+    #le cree al sensor entre 1 y 0.5
+    #le cree a las ruedas (encoder) entre 0.5 y 0
+    K = P_pred / S
+    
+    #paso 3.3 -- actualizar estados
+    """
+    nueva distancia es:
+    nuestra prediccion + la "sorpresa"/error * confianza sensor
+    """
+    d_est = d_pred + K * y
+    
+    #habia mucha incertidumbre antes de corregir, asi que
+    #ahora que estamos mas seguros, baja la incertidumbre proxima
+    P = (1.0 - K) * P_pred
+    
+    # =================================================================
+    # 4. Logica de Navegación Reactiva (No sé? Maria creo)
+    # =================================================================
+    # Use your fused 'd_est' here to decide movement!
+    
+    # Placeholder: Drive forward safely
+    v_izq, v_der = 3.0, 3.0
+    
+    motor_izq.setVelocity(v_izq)
+    motor_der.setVelocity(v_der)
