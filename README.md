@@ -10,24 +10,24 @@ estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
 ## 1. Lista de Control de Actividades / Lista di Controllo delle Attività (Checklist)
 
 ### 🇪🇸 Español
-* [cite_start][x] **Inicialización:** Configurar motores, sensores de distancia y encoders.
-* [cite_start][x] **Filtro simple:** Aplicar un filtro simple sobre los sensores frontales. 
-* [cite_start][x] **Estimación de avance:** Calcular el desplazamiento del robot usando encoders.
-* [cite_start][ ] **Almacenamiento de datos:** Registrar y guardar lecturas crudas y filtradas para los gráficos. 
-* [cite_start][ ] **Filtro de Kalman:** Implementar las etapas de predicción y corrección. 
-* [cite_start][ ] **Navegación Reactiva:** Diseñar las reglas de decisión para avanzar o esquivar. 
-* [cite_start][ ] **Giro con sensores laterales:** Decidir la dirección del giro según la proximidad del obstáculo.
-* [cite_start][ ] **Escenarios de prueba:** Diseñar los dos entornos en Webots (simple y complejo). 
+* [x] **Inicialización:** Configurar motores, sensores de distancia y encoders.
+* [x] **Filtro simple:** Aplicar un filtro simple sobre los sensores frontales. 
+* [x] **Estimación de avance:** Calcular el desplazamiento del robot usando encoders.
+* [ ] **Almacenamiento de datos:** Registrar y guardar lecturas crudas y filtradas para los gráficos. 
+* [ ] **Filtro de Kalman:** Implementar las etapas de predicción y corrección. 
+* [ ] **Navegación Reactiva:** Diseñar las reglas de decisión para avanzar o esquivar. 
+* [ ] **Giro con sensores laterales:** Decidir la dirección del giro según la proximidad del obstáculo.
+* [ ] **Escenarios de prueba:** Diseñar los dos entornos en Webots (simple y complejo). 
 
 ### 🇮🇹 Italiano (Stacce)
-* [cite_start][x] **Inizializzazione:** Configurare motori, sensori di distanza ed encoder.
-* [cite_start][x] **Filtro semplice:** Applicare un filtro semplice sui sensori frontali. 
-* [cite_start][x] **Stima dell'avanzamento:** Calcolare lo spostamento del robot usando gli encoder. 
-* [cite_start][ ] **Salvataggio dei dati:** Registrare e salvare le letture grezze e filtrate per i grafici. 
-* [cite_start][ ] **Filtro di Kalman:** Implementare le fasi di predizione e correzione. 
-* [cite_start][ ] **Navigazione Reattiva:** Progettare le regole decisionali per avanzare o schivare. 
-* [cite_start][ ] **Svolta con sensori laterali:** Decidere la direzione della svolta in base alla vicinanza dell'ostacolo. 
-* [cite_start][ ] **Scenari di prova:** Progettare i due ambienti su Webots (semplice e complesso).
+* [x] **Inizializzazione:** Configurare motori, sensori di distanza ed encoder.
+* [x] **Filtro semplice:** Applicare un filtro semplice sui sensori frontali. 
+* [x] **Stima dell'avanzamento:** Calcolare lo spostamento del robot usando gli encoder. 
+* [ ] **Salvataggio dei dati:** Registrare e salvare le letture grezze e filtrate per i grafici. 
+* [ ] **Filtro di Kalman:** Implementare le fasi di predizione e correzione. 
+* [ ] **Navigazione Reattiva:** Progettare le regole decisionali per avanzare o schivare. 
+* [ ] **Svolta con sensori laterali:** Decidere la direzione della svolta in base alla vicinanza dell'ostacolo. 
+* [ ] **Scenari di prova:** Progettare i due ambienti su Webots (semplice e complesso).
 
 ---
 
