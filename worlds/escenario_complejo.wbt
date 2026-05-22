@@ -1,0 +1,72 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/solids/protos/SolidBox.proto"
+
+WorldInfo {
+  basicTimeStep 16
+}
+Viewpoint {
+  orientation -0.36708934063602744 0.38543719915263575 0.846571663535213 1.6883200128257816
+  position 0.278278084537256 -1.6413798573696043 2.4206708722454113
+}
+Background {
+  skyColor [
+    0.4 0.7 1
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction 0.1 -0.5 0.3
+}
+RectangleArena {
+  floorSize 2.5 2.5
+}
+E-puck {
+  translation -0.9 0 0.01
+  rotation 0 0 1 0
+  controller "robotito-controller"
+}
+
+# --- Pasillo en L (0.30 m de ancho) ---
+# Tramo horizontal: el robot entra desde la izquierda y recorre ~1.1 m hasta la esquina
+SolidBox {
+  translation -0.05 0.15 0.1
+  name "pared_tramo1_superior"
+  size 1.1 0.05 0.2
+}
+SolidBox {
+  translation 0.1 -0.15 0.1
+  name "pared_tramo1_inferior"
+  size 1.4 0.05 0.2
+}
+
+# Tramo vertical: el robot gira 90 grados y sube hacia el norte
+SolidBox {
+  translation 0.5 0.475 0.1
+  name "pared_tramo2_izquierda"
+  size 0.05 0.65 0.2
+}
+SolidBox {
+  translation 0.8 0.325 0.1
+  name "pared_tramo2_derecha"
+  size 0.05 0.95 0.2
+}
+
+# --- Obstaculos dispersos en las zonas abiertas ---
+SolidBox {
+  translation -0.7 0.7 0.05
+  name "obs_zona_abierta_1"
+  size 0.15 0.15 0.1
+}
+SolidBox {
+  translation 0.3 -0.7 0.05
+  name "obs_zona_abierta_2"
+  size 0.15 0.15 0.1
+}
+SolidBox {
+  translation 0.65 1.0 0.05
+  name "obs_salida_pasillo"
+  size 0.15 0.15 0.1
+}
