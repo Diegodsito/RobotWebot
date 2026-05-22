@@ -136,13 +136,25 @@ Arena de 2.5×2.5 m con 3 obstáculos aislados. El robot parte desde (-0.9, 0) m
 - Obstáculo superior en (0.7, 0.5)
 - Obstáculo inferior en (0.5, -0.7)
 
-Se observa un único evento de esquive, con las señales cruda, filtrada y Kalman claramente diferenciadas en el valle del gráfico.
+**Estabilidad del movimiento:** el robot avanza de forma continua y estable durante la mayor parte de la simulación. Al haber pocos obstáculos y espacio amplio, los cambios de dirección son infrecuentes.
+
+**Giros innecesarios:** se registra un único evento de esquive (~segundo 20). La estimación Kalman amortigua los picos de ruido, evitando activaciones falsas del estado `AVOID` que sí podrían ocurrir con la señal cruda.
+
+**Capacidad para evitar colisiones:** el robot detecta el obstáculo con suficiente anticipación gracias a `d_est`, frena correctamente y gira sin colisionar.
+
+**Diferencias entre señales:** en el gráfico se aprecia que la señal cruda (rojo) cae abruptamente y con mayor ruido que el filtro simple (naranja). El Kalman (azul) desciende de forma más gradual, reflejo de que combina la inercia de la predicción odométrica con la medición del sensor.
 
 ### Escenario 2 — Complejo (`escenario_complejo.wbt`)
 
 Pasillo en L de 0.30 m de ancho formado por 4 paredes, más 3 obstáculos dispersos. El robot debe navegar por el tramo horizontal, detectar el fondo del pasillo y girar para recorrer el tramo vertical.
 
-Se observan múltiples eventos de esquive y una divergencia notable entre los encoders izquierdo y derecho, lo que evidencia los giros realizados dentro del pasillo. La estimación Kalman se mantiene más estable que la señal cruda en todos los eventos.
+**Estabilidad del movimiento:** el movimiento es menos uniforme que en el escenario simple. Dentro del pasillo, los sensores laterales detectan las paredes continuamente, generando variaciones en las señales que podrían desestabilizar una navegación basada solo en lecturas crudas.
+
+**Giros innecesarios:** se observan dos eventos de esquive (~segundos 30 y 42). El Kalman evita reacciones prematuras ante el ruido que genera la proximidad de las paredes del pasillo, reduciendo giros falsos respecto a lo que produciría la señal cruda.
+
+**Capacidad para evitar colisiones:** el robot navega el pasillo completo y esquiva los obstáculos dispersos sin colisionar. La combinación de sensores laterales y `d_est` permite decidir la dirección de giro correctamente en cada evento.
+
+**Diferencias entre señales:** la divergencia entre los encoders izquierdo y derecho es claramente visible en el gráfico inferior, evidenciando los giros realizados. En los valles de distancia, la señal cruda cae de forma más brusca e irregular que el Kalman, lo que confirma que la fusión sensorial entrega una estimación más confiable en entornos de alta densidad de obstáculos.
 
 ---
 
