@@ -1,67 +1,29 @@
-# Laboratorio 2 de Robótica: Control de Movimientos en Webots
+# Laboratorio 2: Navegación reactiva con filtrado y fusión de sensores en Webots
 
-Implementar un sistema básico de navegación reactiva en Webots para un
-robot móvil diferencial, utilizando sensores de distancia y encoders de rueda,
-aplicando filtrado sobre las mediciones y empleando un filtro de Kalman para
-estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
+**Curso:** Robótica y Sistemas Autónomos 2026-01 — ICI 4150
 
-# Estado del Proyecto - Entrega Laboratorio 2
-
-## 1. Lista de Control de Actividades / Lista di Controllo delle Attività (Checklist)
-
-### 🇪🇸 Español
-* [x] **Inicialización:** Configurar motores, sensores de distancia y encoders.
-* [x] **Filtro simple:** Aplicar un filtro simple sobre los sensores frontales. 
-* [x] **Estimación de avance:** Calcular el desplazamiento del robot usando encoders.
-* [ ] **Almacenamiento de datos:** Registrar y guardar lecturas crudas y filtradas para los gráficos. 
-* [x] **Filtro de Kalman:** Implementar las etapas de predicción y corrección. 
-* [ ] **Navegación Reactiva:** Diseñar las reglas de decisión para avanzar o esquivar. 
-* [ ] **Giro con sensores laterales:** Decidir la dirección del giro según la proximidad del obstáculo.
-* [ ] **Escenarios de prueba:** Diseñar los dos entornos en Webots (simple y complejo). 
-
-### 🇮🇹 Italiano (Stacce)
-* [x] **Inizializzazione:** Configurare motori, sensori di distanza ed encoder.
-* [x] **Filtro semplice:** Applicare un filtro semplice sui sensori frontali. 
-* [x] **Stima dell'avanzamento:** Calcolare lo spostamento del robot usando gli encoder. 
-* [ ] **Salvataggio dei dati:** Registrare e salvare le letture grezze e filtrate per i grafici. 
-* [x] **Filtro di Kalman:** Implementare le fasi di predizione e correzione. 
-* [ ] **Navigazione Reattiva:** Progettare le regole decisionali per avanzare o schivare. 
-* [ ] **Svolta con sensori laterali:** Decidere la direzione della svolta in base alla vicinanza dell'ostacolo. 
-* [ ] **Scenari di prova:** Progettare i due ambienti su Webots (semplice e complesso).
+**Integrantes:**
+- Maria Paganetti
+- Ignacia Brahim
+- Diego Alvarado
+- Sean Jamen
+- Ariel Villar
 
 ---
 
-## 2. Notas de Integrantes / Note dei Membri (Actualizado: Lun 18 de Mayo)
+## Objetivo
 
-### 🇪🇸 Español
-
-* **María (Sensor y Logica Navegación) :** * *Aporte:* Dejó lista la base del robot. Configuró los motores libres, activó los encoders y seleccionó 4 sensores clave (`ps0`, `ps7` al frente; `ps2`, `ps5` a los lados). También programó la conversión matemática de las ruedas a metros y un filtro alpha para limpiar el ruido frontal.
-  * *Qué le falta:* El robot se mueve por tiempos preprogramados (rutinas ciegas). Falta conectar sus avances con la lógica de sensores que usará el resto del equipo.
-* **Ariel:** *(Pendiente)*
-* **Ignacia (Filtro Kalman):** *Aporte:* Diseñó e integró el algoritmo del Filtro de Kalman de 1 dimensión en el controlador principal, definiendo las variables de incertidumbre (`Q`, `R`, `P` y `d_est`) y programando las etapas de Predicción y Corrección. Además, desarrolló e integró la función de mapeo `sensor_a_metros` para resolver la no-linealidad de los sensores infrarrojos, logrando que el filtro reciba lecturas físicamente coherentes en metros.
-  * *Qué le falta:* Sintonizar los valores de ruido (`Q` y `R`) haciendo pruebas directas en la simulación, y utilizar la distancia final estimada (`d_est`) para construir la lógica de navegación reactiva. (Maria)
-* **Shon:** *(Pendiente)*
-* **Diego:** *(Pendiente)*
-
-### 🇮🇹 Italiano
-
-* **María (Sensori e Logica di Navigazione):** * *Contributo:* Ha preparato la base del robot. Ha configurato i motori liberi, attivato gli encoder e selezionato 4 sensori chiave (`ps0`, `ps7` frontali; `ps2`, `ps5` laterali). Ha inoltre programmato la conversione matematica delle ruote in metri e un filtro alpha per pulire il rumore frontale.
-  * *Cosa manca:* Il robot si muove in base a tempi preprogrammati (routine cieche). Manca il collegamento dei suoi progressi con la logica dei sensori che userà il resto del team.
-* **Ariel:** *(In attesa)*
-* **Ignacia (Filtro Kalman):** *Contributo:* Ha progettato e integrato l'algoritmo del Filtro di Kalman a 1 dimensione nel controller principale, definendo le variabili di incertezza (`Q`, `R`, `P` e `d_est`) e programmando le fasi di Predizione e Correzione. Inoltre, ha sviluppato e integrato la funzione di mappatura `sensor_a_metros` per risolvere la non-linearità dei sensori a infrarossi, consentendo al filtro di ricevere letture fisicamente coerenti in metri.
-* 
-  * *Cosa manca:* Calibrare i valori del rumore (`Q` e `R`) effettuando test diretti nella simulazione, e utilizzare la distanza finale stimata (`d_est`) per costruire la logica di navigazione reattiva. (Maria)
-* **Shon:** *(In attesa)*
-* **Diego:** *(In attesa)*
+Implementar un sistema de navegación reactiva en Webots para un robot móvil diferencial, utilizando sensores de distancia y encoders de rueda, aplicando filtrado sobre las mediciones y empleando un filtro de Kalman para estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
 
 ---
 
-## 3. Descripción del robot y sensores
+## Robot y sensores utilizados
 
-**Robot:** e-puck (diferencial de dos ruedas)
+**Robot:** e-puck (diferencial de dos ruedas independientes)
 - Radio de rueda: `r = 0.0205 m`
+- Diámetro del robot: `~7.4 cm`
 
-**Sensores de distancia utilizados:**
+**Sensores de distancia (infrarrojo):**
 
 | Sensor | Posición |
 |--------|----------|
@@ -70,31 +32,33 @@ estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
 | ps2 | Lateral izquierdo |
 | ps5 | Lateral derecho |
 
-**Encoders:** `left wheel sensor` y `right wheel sensor` — entregan posición angular en radianes.
+**Encoders:** `left wheel sensor` y `right wheel sensor` — entregan posición angular acumulada en radianes.
 
 ---
 
-## 4. Frecuencia de muestreo
+## Frecuencia de muestreo
 
-El controlador se ejecuta cada `basicTimeStep = 16 ms`:
+El controlador se ejecuta cada paso de simulación definido por `basicTimeStep`:
 
-$$T_s = 0.016 \text{ s} \qquad f_s = 62.5 \text{ Hz}$$
+$$T_s = 16 \text{ ms} \qquad f_s = \frac{1}{T_s} = 62.5 \text{ Hz}$$
 
----
-
-## 5. Análisis de señales registradas
-
-Los sensores infrarrojos entregan valores crudos en escala no lineal. Se aplica la conversión:
-
-$$d = \frac{1.16}{\sqrt{v_{crudo}}} \quad (v_{crudo} \geq 65), \quad d \in [0.01,\ 0.15] \text{ m}$$
-
-Si `v_crudo < 65` (sin obstáculo detectable) se retorna `0.15 m`. La señal cruda presenta ruido considerable, especialmente en giros y superficies anguladas.
+Todas las señales (crudas, filtradas y estimadas) se registran a esta frecuencia.
 
 ---
 
-## 6. Estimación del avance mediante encoders
+## Análisis de señales registradas
 
-Los encoders entregan desplazamiento angular $\theta$ (rad). El avance lineal es:
+Los sensores infrarrojos del e-puck entregan valores crudos en escala no lineal (0–4095). Para obtener distancias en metros se aplica la función de mapeo:
+
+$$d = \frac{1.16}{\sqrt{v_{crudo}}} \quad \text{con } v_{crudo} \geq 65, \quad d \in [0.01,\ 0.15] \text{ m}$$
+
+Si `v_crudo < 65` (sin obstáculo detectable) se retorna el valor máximo `0.15 m`. La señal cruda presenta ruido considerable, especialmente durante giros y cuando el robot enfrenta superficies en ángulo.
+
+---
+
+## Estimación del avance mediante encoders
+
+Los encoders entregan desplazamiento angular $\theta$ en radianes. El avance lineal de cada rueda se calcula como:
 
 $$s = r \cdot \theta$$
 
@@ -106,17 +70,19 @@ Este valor alimenta la etapa de predicción del filtro de Kalman.
 
 ---
 
-## 7. Filtro simple aplicado
+## Filtro simple aplicado
 
-Filtro exponencial de paso bajo sobre la lectura frontal máxima convertida a metros:
+Se aplica un filtro exponencial de paso bajo sobre la lectura frontal máxima convertida a metros:
 
 $$z_k = \alpha \cdot z_{k,\text{crudo}} + (1 - \alpha) \cdot z_{k-1} \qquad \alpha = 0.25$$
 
-Suaviza el ruido de alta frecuencia con un retardo moderado.
+Un $\alpha$ bajo suaviza más el ruido pero introduce mayor retardo ante cambios bruscos de distancia.
 
 ---
 
-## 8. Implementación del filtro de Kalman
+## Implementación del filtro de Kalman
+
+El filtro de Kalman estima la distancia frontal $\hat{d}_k$ combinando la predicción por odometría con la medición directa del sensor.
 
 ### Etapa de predicción
 
@@ -130,29 +96,27 @@ $$\hat{d}_k = \hat{d}_k^- + K_k\left(z_{k,\text{crudo}} - \hat{d}_k^-\right)$$
 
 $$P_k = (1 - K_k)\cdot P_k^-$$
 
-La corrección usa `z_k_crudo` (medición directa del sensor, ruidosa) — independiente del filtro simple. $K_k$ pondera automáticamente cuánto confiar en la predicción vs. la medición.
+La corrección usa $z_{k,\text{crudo}}$ (medición directa del sensor, ruidosa), independiente del filtro simple. La ganancia $K_k$ pondera automáticamente cuánto confiar en la predicción versus la medición en cada instante: si $R$ es grande, el filtro confía más en la predicción; si $P_k^-$ es grande, confía más en el sensor.
 
 ---
 
-## 9. Lógica de navegación reactiva
+## Lógica de navegación reactiva
 
 El robot opera con tres estados basados en `d_est` (estimación Kalman):
 
 | Estado | Condición de entrada | Acción |
 |--------|---------------------|--------|
 | `FORWARD` | `d_est > 0.133 m` | Avanza a 2.0 rad/s |
-| `FRENANDO` | `d_est < 0.128 m` | Frena por 240 ms (15 pasos × 16 ms) |
+| `FRENANDO` | `d_est < 0.128 m` | Detiene motores por 240 ms (15 pasos × 16 ms) |
 | `AVOID` | Fin del frenado | Gira en el lugar a 1.2 rad/s |
 
-**Dirección del giro** (sensores laterales):
-- `max(ps0, ps1) > max(ps6, ps7)` → obstáculo por la derecha → gira izquierda
-- caso contrario → obstáculo por la izquierda → gira derecha
+**Dirección del giro** (decidida con sensores laterales):
+- `max(ps0, ps1) > max(ps6, ps7)` → obstáculo más próximo por la derecha → gira a la izquierda
+- caso contrario → obstáculo más próximo por la izquierda → gira a la derecha
 
 ---
 
-## 10. Gráficos de señales
-
-> Generados corriendo cada simulación y luego ejecutando `python graficar.py simple` o `python graficar.py complejo` desde la raíz del repo.
+## Gráficos de señales
 
 ### Escenario simple
 ![Señales escenario simple](docs/grafico_simple.png)
@@ -162,37 +126,49 @@ El robot opera con tres estados basados en `d_est` (estimación Kalman):
 
 ---
 
-## 11. Resultados en escenarios de prueba
+## Escenarios de prueba
 
-### Escenario simple (`escenario_simple.wbt`)
-Arena 2.5×2.5 m, 3 obstáculos aislados. Robot parte desde (-0.9, 0) mirando +x.
+### Escenario 1 — Simple (`escenario_simple.wbt`)
 
-Permite observar el comportamiento base del filtro Kalman con pocos eventos de esquive.
+Arena de 2.5×2.5 m con 3 obstáculos aislados. El robot parte desde (-0.9, 0) mirando hacia +x.
 
-### Escenario complejo (`escenario_complejo.wbt`)
-Pasillo en L de 0.30 m de ancho + 3 obstáculos dispersos.
+- Obstáculo central en (0, 0)
+- Obstáculo superior en (0.7, 0.5)
+- Obstáculo inferior en (0.5, -0.7)
 
-El robot recorre el tramo horizontal, detecta el fondo del pasillo y gira para recorrer el tramo vertical. Los sensores laterales detectan las paredes continuamente, lo que permite comparar claramente la señal cruda (ruidosa) contra la estimación Kalman (estable).
+Se observa un único evento de esquive, con las señales cruda, filtrada y Kalman claramente diferenciadas en el valle del gráfico.
 
----
+### Escenario 2 — Complejo (`escenario_complejo.wbt`)
 
-## 12. Análisis y conclusiones
+Pasillo en L de 0.30 m de ancho formado por 4 paredes, más 3 obstáculos dispersos. El robot debe navegar por el tramo horizontal, detectar el fondo del pasillo y girar para recorrer el tramo vertical.
 
-- El **filtro simple** reduce ruido de alta frecuencia pero introduce retardo ante cambios bruscos.
-- El **filtro de Kalman** combina odometría y sensor, produciendo una estimación más estable y con menor retardo cuando el robot avanza rectamente.
-- Usar `d_est` en lugar de lecturas crudas reduce los **giros innecesarios** causados por picos de ruido.
-- En pasillos estrechos, la ganancia $K_k$ sube porque la odometría acumula error en los giros, pasando a confiar más en el sensor.
+Se observan múltiples eventos de esquive y una divergencia notable entre los encoders izquierdo y derecho, lo que evidencia los giros realizados dentro del pasillo. La estimación Kalman se mantiene más estable que la señal cruda en todos los eventos.
 
 ---
 
-## 13. Instrucciones para ejecutar
+## Análisis y conclusiones
+
+- El **filtro simple** reduce el ruido de alta frecuencia pero introduce retardo ante cambios bruscos, lo que puede provocar reacciones tardías frente a obstáculos próximos.
+- El **filtro de Kalman** combina la predicción odométrica con la medición del sensor, produciendo una estimación más estable y con menor retardo cuando el robot avanza en línea recta.
+- Usar `d_est` en lugar de lecturas crudas para las decisiones de navegación reduce los giros innecesarios causados por picos de ruido transitorio.
+- En el escenario complejo, los encoders divergen visiblemente durante los giros dentro del pasillo, lo que aumenta la incertidumbre de la predicción y hace que la ganancia $K_k$ suba, confiando más en el sensor.
+
+---
+
+## Instrucciones para ejecutar
 
 **Requisitos:** Webots R2025a, Python 3 con `matplotlib`
 
-1. Abrir Webots: `File → Open World` y seleccionar el `.wbt` deseado.
+1. Abrir Webots: `File → Open World` y seleccionar el escenario deseado:
+   - `worlds/escenario_simple.wbt`
+   - `worlds/escenario_complejo.wbt`
+
 2. Correr la simulación (▶). Se genera `docs/datos_simulacion.csv` automáticamente.
-3. Detener la simulación y desde la raíz del repo ejecutar:
+
+3. Detener la simulación y desde la raíz del repositorio ejecutar:
    ```bash
-   python graficar.py
+   python graficar.py simple
+   # o
+   python graficar.py complejo
    ```
-   Genera `docs/grafico_senales.png`.
+   Genera el PNG correspondiente en `docs/`.
