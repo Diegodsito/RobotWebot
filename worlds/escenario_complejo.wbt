@@ -8,8 +8,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.36708934063602744 0.38543719915263575 0.846571663535213 1.6883200128257816
-  position 0.278278084537256 -1.6413798573696043 2.4206708722454113
+  orientation -0.3546263562624116 0.40605173682508666 0.8422363887088801 1.6070750379475305
+  position -0.49168130698178136 -6.977912656793486 6.764237215268917
 }
 Background {
   skyColor [
@@ -23,50 +23,85 @@ DirectionalLight {
 RectangleArena {
   floorSize 2.5 2.5
 }
+SolidBox {
+  translation 0.58 -0.79 0.1
+  name "trap_b3(1)"
+  size 0.4 0.1 0.2
+}
 E-puck {
-  translation -0.9 0 0.01
-  rotation 0 0 1 0
+  translation -1.1 -1.1 0.01
   controller "robotito-controller"
 }
-
-# --- Pasillo en L (0.30 m de ancho) ---
-# Tramo horizontal: el robot entra desde la izquierda y recorre ~1.1 m hasta la esquina
 SolidBox {
-  translation -0.05 0.15 0.1
-  name "pared_tramo1_superior"
-  size 1.1 0.05 0.2
+  translation -0.79 -0.52 0.1
+  rotation 0 0 1 -1.5707953071795862
+  name "spine1"
+  size 0.6 0.1 0.2
 }
 SolidBox {
-  translation 0.1 -0.15 0.1
-  name "pared_tramo1_inferior"
-  size 1.4 0.05 0.2
-}
-
-# Tramo vertical: el robot gira 90 grados y sube hacia el norte
-SolidBox {
-  translation 0.5 0.475 0.1
-  name "pared_tramo2_izquierda"
-  size 0.05 0.65 0.2
+  translation -0.425266 -0.425266 0.1
+  rotation 0 0 1 -2.3561953071795863
+  name "spine2"
+  size 0.1 0.7 0.2
 }
 SolidBox {
-  translation 0.8 0.325 0.1
-  name "pared_tramo2_derecha"
-  size 0.05 0.95 0.2
-}
-
-# --- Obstaculos dispersos en las zonas abiertas ---
-SolidBox {
-  translation -0.7 0.7 0.05
-  name "obs_zona_abierta_1"
-  size 0.15 0.15 0.1
+  translation 0.175772 -0.389911 0.1
+  rotation 0 0 1 -2.3561953071795863
+  name "spine2(1)"
+  size 0.1 0.7 0.2
 }
 SolidBox {
-  translation 0.3 -0.7 0.05
-  name "obs_zona_abierta_2"
-  size 0.15 0.15 0.1
+  translation 0.9 0.17 0.1
+  name "spine3"
+  size 0.7 0.1 0.2
 }
 SolidBox {
-  translation 0.65 1.0 0.05
-  name "obs_salida_pasillo"
-  size 0.15 0.15 0.1
+  translation 0.45 0.66 0.1
+  name "spine3(1)"
+  size 0.7 0.1 0.2
+}
+SolidBox {
+  translation -0.79 0.18 0.1
+  rotation 0 0 1 1.5708
+  name "trap_a1"
+  size 0.7 0.1 0.2
+}
+SolidBox {
+  translation -0.48 -0.77 0.1
+  rotation 0 0 1 -1.5707953071795862
+  name "trap_b1"
+  size 0.1 0.5 0.2
+}
+SolidBox {
+  translation -0.25 1.05 0.1
+  rotation 0 0 1 1.5708
+  name "trap_b3"
+  size 0.4 0.1 0.2
+}
+SolidBox {
+  translation -0.08 0.09 0.1
+  rotation 0 0 1 1.5708
+  name "trap_b3(3)"
+  size 0.4 0.1 0.2
+}
+SolidBox {
+  translation 0.75 -0.5 0.1
+  rotation 0 0 1 1.5708
+  name "trap_b3(2)"
+  size 0.4 0.1 0.2
+}
+SolidBox {
+  translation -0.8 0.68 0.05
+  name "obs1"
+  size 0.1 0.1 0.1
+}
+SolidBox {
+  translation 0.44 -0.34 0.05
+  name "obs2"
+  size 0.1 0.1 0.1
+}
+SolidBox {
+  translation -0.58 -0.03 0.05
+  name "obs3"
+  size 0.1 0.1 0.1
 }
