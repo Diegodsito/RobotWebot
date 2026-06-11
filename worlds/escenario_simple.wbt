@@ -2,14 +2,14 @@
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/solids/protos/SolidBox.proto"
+EXTERNPROTO "../protos/SolidBox.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.36708934063602744 0.38543719915263575 0.846571663535213 1.6883200128257816
-  position 0.278278084537256 -1.6413798573696043 2.4206708722454113
+  orientation -0.3064114859746213 0.37763931028934467 0.8737851867518768 1.4967833506992059
+  position -0.8706825515188132 -2.8543397980137675 2.728493437507753
 }
 Background {
   skyColor [
@@ -24,8 +24,18 @@ RectangleArena {
   floorSize 2.5 2.5
 }
 E-puck {
-  translation -0.9 0 0.01
-  rotation 0 0 1 0
+  hidden position_0_0 197.10367571798253
+  hidden position_0_1 195.9037490343552
+  hidden linearVelocity_0 -1.4278173914424504e-06 -2.926804703036005e-07 -6.384283011584558e-07
+  hidden angularVelocity_0 2.05269099614032e-05 7.302973704145553e-05 6.471273285923653e-07
+  hidden rotation_1 0 -1 0 4.815665987262905
+  hidden linearVelocity_1 -1.0962685647315179e-06 -3.8928931848647614e-07 -7.909535030262946e-07
+  hidden angularVelocity_1 2.0493361981072956e-05 7.293986200696186e-05 6.475577731770895e-07
+  hidden rotation_2 0 -1 0 4.822600720650429
+  hidden linearVelocity_2 -1.0650003513029778e-06 -4.011143580221243e-07 -4.5776568396569693e-07
+  hidden angularVelocity_2 2.0493223347983583e-05 7.294134205420083e-05 6.466808279061324e-07
+  translation 0.8330799611709331 0.010586853969073332 -1.9767859892232467e-05
+  rotation -0.0017334878559119521 -0.011457441914279245 -0.9999328587683446 0.3602904766916884
   controller "robotito-controller"
 }
 SolidBox {
@@ -42,4 +52,33 @@ SolidBox {
   translation 0.5 -0.7 0.05
   name "obstaculo_inferior"
   size 0.15 0.15 0.1
+}
+SolidBox {
+  translation -0.9 0.15 0.02
+  name "marca_inicio"
+  size 0.08 0.08 0.02
+  appearance PBRAppearance {
+    baseColor 0 1 0
+    baseColorMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/default/worlds/textures/tagged_wall.jpg"
+      ]
+    }
+    roughness 0.5
+  }
+}
+SolidBox {
+  translation 0.9 0 0.02
+  name "marca_meta"
+  size 0.06 0.08 0.02
+  appearance PBRAppearance {
+    baseColor 1 0 0
+    baseColorMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/default/worlds/textures/tagged_wall.jpg"
+      ]
+    }
+    roughness 0.5
+    metalness 0
+  }
 }

@@ -24,7 +24,7 @@ import path_planning
 # =============================================================================
 # CONFIGURACIÓN — cambiar según escenario
 # =============================================================================
-ESCENARIO = "complejo"   # "simple" o "complejo"
+ESCENARIO = "simple"   # "simple" o "complejo"
 
 CONFIG = {
     "simple":   {"start": (-0.9,  0.0), "goal": ( 0.9,  0.0)},
