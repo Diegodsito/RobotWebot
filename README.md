@@ -225,7 +225,13 @@ El proyecto extiende los laboratorios añadiendo la dimensión global: en vez de
 
 ### Gráficos
 
-*Generados con `graficar_final.py` tras ejecutar cada escenario:*
+*Generados con `graficar_final.py` tras ejecutar cada escenario. El script produce 3 figuras por escenario guardadas en `docs/`:*
+
+| Archivo | Contenido |
+|---------|-----------|
+| `trayectoria_<escenario>.png` | Trayectoria ejecutada vs ruta A* planificada en el plano XY, con zonas AVOID marcadas y métricas anotadas |
+| `senales_<escenario>.png` | Señal IR cruda vs estimación Kalman + encoders izquierdo/derecho vs tiempo |
+| `seguimiento_<escenario>.png` | Distancia al waypoint activo vs tiempo + longitud ejecutada acumulada vs planificada |
 
 #### Trayectoria estimada — Escenario simple
 ![Trayectoria simple](docs/trayectoria_simple.png)
@@ -238,6 +244,12 @@ El proyecto extiende los laboratorios añadiendo la dimensión global: en vez de
 
 #### Señales de distancia — Escenario complejo
 ![Señales complejo](docs/senales_complejo.png)
+
+#### Seguimiento de waypoints — Escenario simple
+![Seguimiento simple](docs/seguimiento_simple.png)
+
+#### Seguimiento de waypoints — Escenario complejo
+![Seguimiento complejo](docs/seguimiento_complejo.png)
 
 ### Video demostrativo
 
@@ -292,6 +304,9 @@ README.md
    python graficar_final.py simple
    python graficar_final.py complejo
    ```
+   Esto genera en `docs/` tres imágenes por escenario:
+   `trayectoria_*.png`, `senales_*.png` y `seguimiento_*.png`.
+   Las métricas (tiempo, longitud, activaciones AVOID) también se imprimen en consola.
 
 ---
 
