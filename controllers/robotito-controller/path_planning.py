@@ -55,36 +55,49 @@ def create_map_complejo():
     """
     grid = [[0] * GRID_SIZE for _ in range(GRID_SIZE)]
 
+    # Todos los valores extraídos directamente del escenario_complejo.wbt.
+    # Regla de rotación en grilla 2D (eje Z):
+    #   rot 0        → size(w, h) se usa tal cual:  w=x, h=y
+    #   rot ±90°     → dimensiones intercambiadas:  w=h_orig, h=w_orig
+    #   rot ±45°     → bbox diagonal: w=h=largo*√2  (aproximación conservadora)
+
     # --- SPINES ---
-    # spine1: size 0.6×0.1, rot 90° → en grilla: 0.1×0.6
-    add_box_to_grid(grid, -0.79,  -0.52,  0.1,  0.6)
-    # spine2: size 0.1×0.7, rot 45° → bbox cuadrada ≈ 0.7*√2 × 0.7*√2 ≈ 0.55×0.55 (pero mantenemos bbox conservadora)
-    add_box_to_grid(grid, -0.425, -0.425, 0.6,  0.6)
-    # spine2(1): igual que spine2 pero en distinta posición
-    add_box_to_grid(grid,  0.175, -0.389, 0.6,  0.6)
-    # spine3: size 0.7×0.1, sin rotación
-    add_box_to_grid(grid,  0.9,    0.17,  0.7,  0.1)
-    # spine3(1): size 0.7×0.1, sin rotación
-    add_box_to_grid(grid,  0.45,   0.66,  0.7,  0.1)
+    # spine1: size 0.6×0.1, rot -90° → en grilla w=0.1, h=0.6
+    add_box_to_grid(grid, -0.79,   -0.52,  0.1,  0.6)
+    # spine2: size 0.1×0.7, rot -135° (≈-2.356 rad, diagonal) → bbox 0.7*√2 ≈ 0.50
+    add_box_to_grid(grid, -0.4253, -0.4253, 0.50, 0.50)
+    # spine2(1): size 0.1×0.7, rot -135° → bbox 0.50×0.50
+    add_box_to_grid(grid,  0.1758, -0.3899, 0.50, 0.50)
+    # spine3: size 0.7×0.1, rot 0° → w=0.7, h=0.1
+    add_box_to_grid(grid,  0.9,     0.17,   0.7,  0.1)
+    # spine3(1): size 0.7×0.1, rot 0° → w=0.7, h=0.1
+    add_box_to_grid(grid,  0.45,    0.66,   0.7,  0.1)
 
     # --- TRAMPAS ---
-    # trap_b3(1): size 0.4×0.1, sin rotación
-    add_box_to_grid(grid,  0.58,  -0.79,  0.4,  0.1)
-    # trap_a1: size 0.7×0.1, rot 90° → 0.1×0.7
-    add_box_to_grid(grid, -0.79,   0.18,  0.1,  0.7)
-    # trap_b1: size 0.1×0.5, rot 90° → 0.5×0.1 (efectivamente igual por simetría)
-    add_box_to_grid(grid, -0.48,  -0.77,  0.5,  0.1)
-    # trap_b3: size 0.4×0.1, rot 90° → 0.1×0.4
-    add_box_to_grid(grid, -0.25,   1.05,  0.1,  0.4)
-    # trap_b3(3): size 0.4×0.1, rot 90° → 0.1×0.4
-    add_box_to_grid(grid, -0.08,   0.09,  0.1,  0.4)
-    # trap_b3(2): size 0.4×0.1, rot 90° → 0.1×0.4
-    add_box_to_grid(grid,  0.75,  -0.5,   0.1,  0.4)
+    # trap_b3(1): size 0.4×0.1, rot 0° → w=0.4, h=0.1
+    add_box_to_grid(grid,  0.58,   -0.79,   0.4,  0.1)
+    # trap_a1: size 0.7×0.1, rot +90° → w=0.1, h=0.7
+    add_box_to_grid(grid, -0.79,    0.18,   0.1,  0.7)
+    # trap_b1: size 0.1×0.5, rot -90° → w=0.5, h=0.1
+    add_box_to_grid(grid, -0.48,   -0.77,   0.5,  0.1)
+    # trap_b3: size 0.4×0.1, rot +90° → w=0.1, h=0.4
+    add_box_to_grid(grid, -0.25,    1.05,   0.1,  0.4)
+    # trap_b3(3): size 0.4×0.1, rot +90° → w=0.1, h=0.4
+    add_box_to_grid(grid, -0.08,    0.09,   0.1,  0.4)
+    # trap_b3(2): size 0.4×0.1, rot +90° → w=0.1, h=0.4
+    add_box_to_grid(grid,  0.75,   -0.5,    0.1,  0.4)
 
-    # --- OBSTÁCULOS pequeños ---
-    add_box_to_grid(grid, -0.8,    0.68,  0.1,  0.1)   # obs1
-    add_box_to_grid(grid,  0.44,  -0.34,  0.1,  0.1)   # obs2
-    add_box_to_grid(grid, -0.58,  -0.03,  0.1,  0.1)   # obs3
+    # --- OBSTÁCULOS pequeños (sin rotación) ---
+    add_box_to_grid(grid, -0.8,     0.68,   0.1,  0.1)   # obs1
+    add_box_to_grid(grid,  0.44,   -0.34,   0.1,  0.1)   # obs2
+    add_box_to_grid(grid, -0.58,   -0.03,   0.1,  0.1)   # obs3
+
+    # --- PAREDES DE LA ARENA (RectangleArena 2.5×2.5 m) ---
+    # Marcar los bordes para que A* nunca planifique cerca de ellos
+    add_box_to_grid(grid,  0.0,  -1.25, 2.5, 0.05)   # pared sur
+    add_box_to_grid(grid,  0.0,   1.25, 2.5, 0.05)   # pared norte
+    add_box_to_grid(grid, -1.25,  0.0,  0.05, 2.5)   # pared oeste
+    add_box_to_grid(grid,  1.25,  0.0,  0.05, 2.5)   # pared este
 
     return grid
 
@@ -98,9 +111,16 @@ def create_map_simple():
     add_box_to_grid(grid,  0.00,  0.00, 0.15, 0.15)   # obstaculo_central
     add_box_to_grid(grid,  0.70,  0.50, 0.15, 0.15)   # obstaculo_superior
     add_box_to_grid(grid,  0.50, -0.70, 0.15, 0.15)   # obstaculo_inferior
+
+    # --- PAREDES DE LA ARENA ---
+    add_box_to_grid(grid,  0.0,  -1.25, 2.5, 0.05)   # pared sur
+    add_box_to_grid(grid,  0.0,   1.25, 2.5, 0.05)   # pared norte
+    add_box_to_grid(grid, -1.25,  0.0,  0.05, 2.5)   # pared oeste
+    add_box_to_grid(grid,  1.25,  0.0,  0.05, 2.5)   # pared este
+
     return grid
 
-def inflate_map(grid, radius=2):
+def inflate_map(grid, radius=3):
     """
     Infla obstáculos 'radius' celdas de margen.
     Con CELL_SIZE=0.025 y radius=2 → margen de 5 cm (suficiente para el e-puck de 3.7 cm de radio).

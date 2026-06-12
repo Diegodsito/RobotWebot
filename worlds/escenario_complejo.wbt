@@ -9,7 +9,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.3546263562624116 0.40605173682508666 0.8422363887088801 1.6070750379475305
-  position -0.49168130698178136 -6.977912656793486 6.764237215268917
+  position -0.0825459640284863 -3.9655847444008643 3.6525757987451444
 }
 Background {
   skyColor [
@@ -29,7 +29,11 @@ SolidBox {
   size 0.4 0.1 0.2
 }
 E-puck {
-  translation -1.1 -1.1 0.01
+  hidden position_0_0 20.94093687062579
+  hidden position_0_1 21.49573145692972
+  hidden rotation_1 0 -1 0 4.191804358092555
+  hidden rotation_2 0 -1 0 3.637009771788624
+  translation -1 -1 0
   controller "robotito-controller"
 }
 SolidBox {
