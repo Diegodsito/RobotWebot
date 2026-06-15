@@ -1,8 +1,4 @@
 import csv
-import sys
-import matplotlib.pyplot as plt
-
-escenario = sys.argv[1] if len(sys.argv) > 1 else "simulacion"
 
 tiempos, crudos, filtrados, kalmans, enc_izq, enc_der = [], [], [], [], [], []
 
@@ -20,11 +16,9 @@ fig.suptitle(f'Escenario: {escenario}', fontsize=13)
 
 ax1.plot(tiempos, crudos,    label='Crudo',                alpha=0.5, color='red')
 ax1.plot(tiempos, filtrados, label='Filtro simple (α=0.25)', color='orange', linewidth=1.5)
-ax1.plot(tiempos, kalmans,   label='Kalman (d_est)',        color='blue',   linewidth=1.5)
 ax1.axhline(y=0.128, color='gray', linestyle='--', linewidth=0.8, label='Umbral AVOID (0.128 m)')
-ax1.set_ylabel('Distancia frontal (m)')
+ax1.axhline(y=0.128, color='gray', linestyle='--', linewidth=0.8, label='Umbral AVOID (0.128 m)')
 ax1.set_xlabel('Tiempo (s)')
-ax1.set_title('Señales de distancia frontal al obstáculo')
 ax1.legend()
 ax1.grid(True)
 
