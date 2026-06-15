@@ -33,6 +33,7 @@ E-puck {
   rotation 0 -1 0 0
   controller "robotito-controller"
 }
+
 SolidBox {
   translation -0.79 -0.52 0.1
   rotation 0 0 1 -1.5707953071795862
@@ -80,7 +81,7 @@ SolidBox {
   size 0.4 0.1 0.2
 }
 SolidBox {
-  translation -0.0800007 0.14 0.1
+  translation -0.0799989 -0.56 0.1
   rotation 0 0 1 1.5708
   name "trap_b3(3)"
   size 0.4 0.1 0.2

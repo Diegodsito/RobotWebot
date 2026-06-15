@@ -8,9 +8,9 @@ GRID_SIZE = 100
 CELL_SIZE = 0.025
 ARENA_OFFSET = 1.25
 
-ROBOT_RADIUS_CELLS = 4    # Raggio fisico "duro" a 7.5 cm (margine perfetto per l'e-puck)
-SAFETY_RADIUS_CELLS = 8   # Raggio fittizio ridotto a 20 cm
-PENALTY_WEIGHT = 5.0      # FIX: aumentato da 2.0 → 5.0 per forzare A* più al centro dei corridoi
+ROBOT_RADIUS_CELLS = 4    # Margine duro 10 cm — non aumentare: (-1,-1) diventerebbe zona proibita
+SAFETY_RADIUS_CELLS = 10  # Zona penalità 25 cm
+PENALTY_WEIGHT = 15.0     # Alto: forza A* al centro dei corridoi lontano dai muri
 
 def world_to_grid(x, y):
     col = int(round((x + ARENA_OFFSET) / CELL_SIZE))
