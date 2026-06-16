@@ -9,31 +9,48 @@ sys.path.insert(0, current_dir)
 import path_planning
 
 # =============================================================================
-# CONTROLADOR E-PUCK V2 — ODOMETRIA + EVITAMENTO CON RICALCOLO E STAMPA MAPPA
+# CONTROLADOR E-PUCK V2 — AUTODETECTION SCENARIO + EVITAMENTO + STATISTICHE
 # =============================================================================
 
 SCENARIOS = {
     "semplice": {
-        "wbt_name": "semplice",
         "start":    (-1.0,  0.0),
         "goal":     ( 1.0,  0.0),
     },
     "complejo": {
-        "wbt_name": "complejo",
         "start":    (-1.0, -1.0),
         "goal":     ( 1.0,  1.0),
     },
 }
 
-scenario_key = sys.argv[1] if len(sys.argv) > 1 else "complejo"
-if scenario_key not in SCENARIOS:
-    print(f"[WARN] Scenario '{scenario_key}' non trovato. Uso 'complejo'.")
+robot    = Robot()
+timestep = int(robot.getBasicTimeStep())
+
+# -----------------------------------------------------------------------------
+# RILEVAMENTO DINAMICO DELLO SCENARIO
+# -----------------------------------------------------------------------------
+try:
+    wbt_path = robot.getWorldPath()
+except AttributeError:
+    # Fallback super-sicuro se l'API non è supportata
+    import glob
+    worlds_dir = os.path.abspath(os.path.join(current_dir, '..', '..', 'worlds'))
+    wbts = glob.glob(os.path.join(worlds_dir, '*.wbt'))
+    wbt_path = max(wbts, key=os.path.getmtime) if wbts else ""
+
+wbt_filename = os.path.basename(wbt_path).lower()
+
+if "semplice" in wbt_filename:
+    scenario_key = "semplice"
+else:
     scenario_key = "complejo"
 
-cfg       = SCENARIOS[scenario_key]
-ESCENARIO = cfg["wbt_name"]
-START     = cfg["start"]
-GOAL      = cfg["goal"]
+print(f"\n[SISTEMA] Rilevato file in esecuzione: {wbt_filename}")
+print(f"[SISTEMA] Avvio Controller — Impostato scenario: {scenario_key.upper()}\n")
+
+cfg   = SCENARIOS[scenario_key]
+START = cfg["start"]
+GOAL  = cfg["goal"]
 
 WHEEL_RADIUS  = 0.0205
 AXLE_LENGTH   = 0.057
@@ -48,19 +65,17 @@ WAYPOINT_REACHED   = 0.07
 GOAL_TOL           = 0.08
 TURN_IN_PLACE_ANGLE = math.radians(45)
 
-IR_DANGER_THRESHOLD  = 150   
+IR_DANGER_THRESHOLD  = 100
 
-# FIX: Angoli rad esatti del modello fisico E-puck in Webots
-# (Negativi = Lato Destro, Positivi = Lato Sinistro)
 PS_ANGLES = [
-     -0.2967, # ps0 (approx -17°)
-     -0.8726, # ps1 (approx -50°)
-     -1.5708, # ps2 (approx -90°)
-     -2.6179, # ps3 (approx -150°)
-      2.6179, # ps4 (approx +150°)
-      1.5708, # ps5 (approx +90°)
-      0.8726, # ps6 (approx +50°)
-      0.2967  # ps7 (approx +17°)
+     -0.2967, # ps0
+     -0.8726, # ps1
+     -1.5708, # ps2
+     -2.6179, # ps3
+      2.6179, # ps4
+      1.5708, # ps5
+      0.8726, # ps6
+      0.2967  # ps7
 ]
 
 class KalmanIR:
@@ -126,11 +141,8 @@ def check_obstacle(filtered_ir):
     return danger, trigger_idx
 
 # =============================================================================
-# INIZIALIZZAZIONE DISPOSITIVI
+# SETUP DEI DEVICE
 # =============================================================================
-robot    = Robot()
-timestep = int(robot.getBasicTimeStep())
-
 left_motor  = robot.getDevice("left wheel motor")
 right_motor = robot.getDevice("right wheel motor")
 left_motor.setPosition(float("inf"))
@@ -150,13 +162,11 @@ right_encoder.enable(timestep)
 
 kalman_filters = [KalmanIR(q=1.0, r=50.0) for _ in range(8)]
 
-print(f"[SISTEMA] Avvio Controller — scenario: {scenario_key}")
-
-grid_map = path_planning.create_map_from_wbt(ESCENARIO)
+grid_map = path_planning.create_map_from_wbt(wbt_path)
 
 waypoints, planned_length, raw_route = plan_route(grid_map, START, GOAL)
 
-print("\n[MAPPA] --- VISUALIZZAZIONE ROTTA INIZIALE ---")
+print("[MAPPA] --- VISUALIZZAZIONE ROTTA INIZIALE ---")
 path_planning.visualize_path(grid_map, raw_route)
 print("--------------------------------------------\n")
 
@@ -168,13 +178,15 @@ prev_right = right_encoder.getValue()
 
 x_est, y_est, theta_est = START[0], START[1], 0.0
 
-# Variabili FSM e Retromarcia
 STATE_TRACKING = 0
 STATE_REVERSING = 1
 state = STATE_TRACKING
 reverse_start_x = 0.0
 reverse_start_y = 0.0
 REVERSE_DIST_TARGET = 0.06 
+
+actual_distance_traveled = 0.0
+detected_obstacles = []
 
 # =============================================================================
 # LOOP PRINCIPALE
@@ -190,13 +202,25 @@ while robot.step(timestep) != -1:
     dr = (cur_right - prev_right) * WHEEL_RADIUS
     prev_left, prev_right = cur_left, cur_right
 
+    v_dt = (dr + dl) / 2.0
+    actual_distance_traveled += abs(v_dt)
+
     x_est, y_est, theta_est = update_odometry(x_est, y_est, theta_est, dl, dr)
 
     dist_goal = math.hypot(GOAL[0] - x_est, GOAL[1] - y_est)
+    
     if dist_goal < GOAL_TOL:
         left_motor.setVelocity(0.0)
         right_motor.setVelocity(0.0)
-        print(f"[OK] Meta raggiunta con successo in pos=({x_est:.3f},{y_est:.3f})")
+        
+        print(f"\n[OK] Meta raggiunta con successo in pos=({x_est:.3f}, {y_est:.3f})")
+        print("\n==================================================")
+        print("[STATISTICHE FINALI]")
+        print(f"Lunghezza totale del percorso (incl. manovre): {actual_distance_traveled:.3f} m")
+        print(f"Numero di ostacoli imprevisti incontrati: {len(detected_obstacles)}")
+        for i, obs in enumerate(detected_obstacles):
+            print(f"  - Ostacolo {i+1} registrato in: ({obs[0]:.3f}, {obs[1]:.3f})")
+        print("==================================================\n")
         break
 
     if state == STATE_TRACKING:
@@ -210,18 +234,15 @@ while robot.step(timestep) != -1:
             left_motor.setVelocity(0.0)
             right_motor.setVelocity(0.0)
             
-            # FIX: Calcolo dinamico della distanza in base alla lettura del sensore
-            # L'E-puck ha raggio 0.035m. 
-            # A 1500 IR, l'ostacolo è quasi attaccato -> ~0.04m dal centro
-            # A 250 IR (soglia), l'ostacolo è a ~3cm dal bordo -> ~0.065m dal centro
             obs_dist = 0.035 + (0.03 * (1.0 - min(val, 1500) / 1500.0))
-            
             obs_angle = norm_angle(theta_est + PS_ANGLES[trigger_idx])
             obs_x = x_est + obs_dist * math.cos(obs_angle) 
             obs_y = y_est + obs_dist * math.sin(obs_angle)
             
             path_planning.add_dynamic_obstacle(grid_map, obs_x, obs_y, radius_m=0.015)
             print(f"[MAPPA] Ostacolo dinamico posizionato a {obs_dist:.3f}m dal centro robot in ({obs_x:.2f}, {obs_y:.2f}).")
+            
+            detected_obstacles.append((obs_x, obs_y))
             
             state = STATE_REVERSING
             reverse_start_x = x_est

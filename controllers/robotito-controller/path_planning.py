@@ -5,7 +5,7 @@ import re
 from collections import deque
 
 # =============================================================================
-# MODULO PATH PLANNING (A* con Gradiente di Costo per navigazione a centro corridoio)
+# MODULO PATH PLANNING (Parsing dinamico del file mondo)
 # =============================================================================
 
 GRID_SIZE = 100
@@ -13,9 +13,6 @@ CELL_SIZE = 0.025
 ARENA_OFFSET = 1.25
 
 ROBOT_RADIUS_CELLS = 4 
-
-# MODIFICA: Ampliato il raggio di sicurezza e attivato il peso di penalità 
-# per generare un campo repulsivo che spinge la rotta verso il centro.
 SAFETY_RADIUS_CELLS = 8
 PENALTY_WEIGHT = 3.0
 
@@ -55,7 +52,6 @@ def add_rotated_box_to_grid(grid, cx, cy, w, h, theta):
                     grid[r][c] = 1
 
 def add_dynamic_obstacle(grid, x, y, radius_m=0.015):
-    """Aggiunge un ostacolo imprevisto con raggio personalizzato."""
     r_center, c_center = world_to_grid(x, y)
     rad_cells = int(math.ceil(radius_m / CELL_SIZE))
     for r in range(r_center - rad_cells, r_center + rad_cells + 1):
@@ -70,23 +66,11 @@ def add_arena_boundaries(grid, thickness=3):
             if r < thickness or r >= GRID_SIZE - thickness or c < thickness or c >= GRID_SIZE - thickness:
                 grid[r][c] = 1
 
-def create_map_from_wbt(scenario_name):
+def create_map_from_wbt(wbt_path):
     grid = [[0] * GRID_SIZE for _ in range(GRID_SIZE)]
     
-    here = os.path.dirname(os.path.abspath(__file__))
-    candidates = [
-        os.path.abspath(os.path.join(here, '..', '..', 'worlds', f'escenario_{scenario_name}.wbt')),
-        os.path.abspath(os.path.join(here, '..', '..', 'worlds', f'{scenario_name}.wbt')),
-        os.path.abspath(os.path.join(os.getcwd(), '..', '..', 'worlds', f'escenario_{scenario_name}.wbt'))
-    ]
-    
-    wbt_path = None
-    for candidate in candidates:
-        if os.path.exists(candidate):
-            wbt_path = candidate
-            break
-
-    if wbt_path is None:
+    if not wbt_path or not os.path.exists(wbt_path):
+        print(f"[WARN] Impossibile trovare il file mondo: {wbt_path}")
         add_arena_boundaries(grid)
         return grid
 
@@ -185,15 +169,12 @@ def a_star(grid, start, goal, robot_radius=ROBOT_RADIUS_CELLS):
             
             d_wall = dist_map[nr][nc]
             
-            # Limite rigido: spazio occupato o troppo vicino al muro
             if d_wall <= robot_radius: continue
 
             step = 1.4142 if dr != 0 and dc != 0 else 1.0
             
-            # MODIFICA: Implementazione del potenziale repulsivo
             penalty = 0.0 
             if d_wall < robot_radius + SAFETY_RADIUS_CELLS:
-                # Applica una penalità lineare che diminuisce man mano che ci si allontana dal muro
                 penalty = (robot_radius + SAFETY_RADIUS_CELLS - d_wall) * PENALTY_WEIGHT
 
             ng = g + step + penalty
