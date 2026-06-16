@@ -5,18 +5,19 @@ import re
 from collections import deque
 
 # =============================================================================
-# MODULO PATH PLANNING (Penalità disattivata per traiettorie perfettamente dritte)
+# MODULO PATH PLANNING (A* con Gradiente di Costo per navigazione a centro corridoio)
 # =============================================================================
 
 GRID_SIZE = 100
 CELL_SIZE = 0.025
 ARENA_OFFSET = 1.25
 
-# FIX: Raggio robot a 4 celle (10cm). Safety e Penalty a ZERO per eliminare 
-# la repulsione invisibile che spingeva la rotta a destra verso x = -0.975
-ROBOT_RADIUS_CELLS = 5 
-SAFETY_RADIUS_CELLS = 5
-PENALTY_WEIGHT = 50.0
+ROBOT_RADIUS_CELLS = 4 
+
+# MODIFICA: Ampliato il raggio di sicurezza e attivato il peso di penalità 
+# per generare un campo repulsivo che spinge la rotta verso il centro.
+SAFETY_RADIUS_CELLS = 8
+PENALTY_WEIGHT = 3.0
 
 def world_to_grid(x, y):
     col = int(round((x + ARENA_OFFSET) / CELL_SIZE))
@@ -53,7 +54,17 @@ def add_rotated_box_to_grid(grid, cx, cy, w, h, theta):
                 if abs(local_x) <= w/2 and abs(local_y) <= h/2:
                     grid[r][c] = 1
 
-def add_arena_boundaries(grid, thickness=ROBOT_RADIUS_CELLS):
+def add_dynamic_obstacle(grid, x, y, radius_m=0.015):
+    """Aggiunge un ostacolo imprevisto con raggio personalizzato."""
+    r_center, c_center = world_to_grid(x, y)
+    rad_cells = int(math.ceil(radius_m / CELL_SIZE))
+    for r in range(r_center - rad_cells, r_center + rad_cells + 1):
+        for c in range(c_center - rad_cells, c_center + rad_cells + 1):
+            if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:
+                if math.hypot(r - r_center, c - c_center) <= rad_cells:
+                    grid[r][c] = 1
+
+def add_arena_boundaries(grid, thickness=3):
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
             if r < thickness or r >= GRID_SIZE - thickness or c < thickness or c >= GRID_SIZE - thickness:
@@ -90,6 +101,11 @@ def create_map_from_wbt(scenario_name):
         cx, cy = float(t_match.group(1)), float(t_match.group(2))
         w, h = float(s_match.group(1)), float(s_match.group(2))
         
+        # Ignorare i box piccoli per farli diventare ostacoli imprevisti
+        if w <= 0.15 and h <= 0.15:
+            print(f"[MAPPA] Ignorato ostacolo piccolo (imprevisto) in {cx:.2f}, {cy:.2f} di dim. {w}x{h}")
+            continue
+
         theta = 0.0
         r_match = re.search(r'rotation\s+([-\d\.eE]+)\s+([-\d\.eE]+)\s+([-\d\.eE]+)\s+([-\d\.eE]+)', box)
         if r_match:
@@ -138,13 +154,13 @@ def nearest_free_cell(dist_map, row, col, min_dist=ROBOT_RADIUS_CELLS):
         if best is not None: return best
     return None
 
-def a_star(grid, start, goal):
+def a_star(grid, start, goal, robot_radius=ROBOT_RADIUS_CELLS):
     dist_map = compute_distance_map(grid)
     
-    if dist_map[start[0]][start[1]] <= ROBOT_RADIUS_CELLS:
-        start = nearest_free_cell(dist_map, start[0], start[1]) or start
-    if dist_map[goal[0]][goal[1]] <= ROBOT_RADIUS_CELLS:
-        goal = nearest_free_cell(dist_map, goal[0], goal[1]) or goal
+    if dist_map[start[0]][start[1]] <= robot_radius:
+        start = nearest_free_cell(dist_map, start[0], start[1], robot_radius) or start
+    if dist_map[goal[0]][goal[1]] <= robot_radius:
+        goal = nearest_free_cell(dist_map, goal[0], goal[1], robot_radius) or goal
 
     open_heap = [(0.0, 0.0, start, None)]
     came_from, best_g = {}, {start: 0.0}
@@ -168,12 +184,18 @@ def a_star(grid, start, goal):
             if not (0 <= nr < GRID_SIZE and 0 <= nc < GRID_SIZE) or nxt in closed: continue
             
             d_wall = dist_map[nr][nc]
-            if d_wall <= ROBOT_RADIUS_CELLS: continue
+            
+            # Limite rigido: spazio occupato o troppo vicino al muro
+            if d_wall <= robot_radius: continue
 
             step = 1.4142 if dr != 0 and dc != 0 else 1.0
             
-            # Penalità rimossa per tracciare una linea matematicamente dritta
+            # MODIFICA: Implementazione del potenziale repulsivo
             penalty = 0.0 
+            if d_wall < robot_radius + SAFETY_RADIUS_CELLS:
+                # Applica una penalità lineare che diminuisce man mano che ci si allontana dal muro
+                penalty = (robot_radius + SAFETY_RADIUS_CELLS - d_wall) * PENALTY_WEIGHT
+
             ng = g + step + penalty
             
             if nxt not in best_g or ng < best_g[nxt]:
@@ -190,12 +212,10 @@ def downsample_world_path(world_points, spacing=0.10):
         p_curr = world_points[i]
         p_next = world_points[i+1]
         
-        # Calcolo angolo tra i segmenti: se c'è una svolta, tieni il punto
         v1 = (p_curr[0]-p_prev[0], p_curr[1]-p_prev[1])
         v2 = (p_next[0]-p_curr[0], p_next[1]-p_curr[1])
         angle = math.atan2(v2[1], v2[0]) - math.atan2(v1[1], v1[0])
         
-        # Se la svolta è significativa (es > 10 gradi), forziamo il salvataggio del punto
         if abs(angle) > math.radians(10) or math.hypot(p_curr[0] - result[-1][0], p_curr[1] - result[-1][1]) >= spacing:
             result.append(p_curr)
             
