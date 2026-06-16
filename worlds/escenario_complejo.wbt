@@ -8,8 +8,8 @@ WorldInfo {
   basicTimeStep 8
 }
 Viewpoint {
-  orientation -0.47345018878262013 0.5421051469581717 0.694238380085083 1.7983397234912673
-  position 0.13893910903011625 -2.853130710505747 6.531933669154809
+  orientation -0.5607579242436436 0.613641589155663 0.5558727826188943 2.0486037108242705
+  position 0.09405978998936973 -0.1113919671633198 6.58380405136934
 }
 Background {
   skyColor [
@@ -24,16 +24,20 @@ RectangleArena {
   floorSize 2.5 2.5
 }
 SolidBox {
+  translation -0.8 0.62 0.05
+  name "obs1"
+  size 0.1 0.1 0.1
+}
+SolidBox {
   translation 0.58 -0.79 0.1
   name "trap_b3(1)"
   size 0.4 0.1 0.2
 }
 E-puck {
   translation -1 -1 0
-  rotation 0 -1 0 0
+  rotation 0 0 -1 -5.307179586466759e-06
   controller "robotito-controller"
 }
-
 SolidBox {
   translation -0.79 -0.52 0.1
   rotation 0 0 1 -1.5707953071795862
@@ -58,7 +62,7 @@ SolidBox {
   size 0.7 0.1 0.2
 }
 SolidBox {
-  translation 0.45 0.66 0.1
+  translation 0.49 0.63 0.1
   name "spine3(1)"
   size 0.7 0.1 0.2
 }
@@ -81,7 +85,7 @@ SolidBox {
   size 0.4 0.1 0.2
 }
 SolidBox {
-  translation -0.0799989 -0.56 0.1
+  translation -0.08 0.09 0.1
   rotation 0 0 1 1.5708
   name "trap_b3(3)"
   size 0.4 0.1 0.2
@@ -91,11 +95,6 @@ SolidBox {
   rotation 0 0 1 1.5708
   name "trap_b3(2)"
   size 0.4 0.1 0.2
-}
-SolidBox {
-  translation -0.8 0.68 0.05
-  name "obs1"
-  size 0.1 0.1 0.1
 }
 SolidBox {
   translation 0.44 -0.34 0.05
