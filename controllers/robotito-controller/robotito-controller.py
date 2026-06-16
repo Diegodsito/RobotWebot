@@ -48,7 +48,7 @@ WAYPOINT_REACHED   = 0.07
 GOAL_TOL           = 0.08
 TURN_IN_PLACE_ANGLE = math.radians(45)
 
-IR_DANGER_THRESHOLD  = 250   
+IR_DANGER_THRESHOLD  = 150   
 
 # FIX: Angoli rad esatti del modello fisico E-puck in Webots
 # (Negativi = Lato Destro, Positivi = Lato Sinistro)

@@ -8,8 +8,8 @@ WorldInfo {
   basicTimeStep 8
 }
 Viewpoint {
-  orientation -0.5384674020434516 0.5833648449898846 0.6080611108815492 1.9765785894637244
-  position 0.026892351956384175 -0.9734336941172053 6.505773413813941
+  orientation -0.5520892849268668 0.5921542729945151 0.586984444805208 2.0178232030383105
+  position -0.014355429413449416 -0.6098706380631476 6.638950846739962
 }
 Background {
   skyColor [
@@ -85,7 +85,7 @@ SolidBox {
   size 0.4 0.1 0.2
 }
 SolidBox {
-  translation -0.0799992 -0.54 0.1
+  translation -0.0800011 0.12 0.1
   rotation 0 0 1 1.5708
   name "trap_b3(3)"
   size 0.4 0.1 0.2
@@ -102,7 +102,7 @@ SolidBox {
   size 0.1 0.1 0.1
 }
 SolidBox {
-  translation -0.48 -0.03 0.05
+  translation -0.23 0.43 0.05
   name "obs3"
   size 0.1 0.1 0.1
 }
