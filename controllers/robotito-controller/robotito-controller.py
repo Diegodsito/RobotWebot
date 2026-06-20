@@ -1,5 +1,6 @@
 import sys
 import os
+import csv
 import math
 from controller import Robot
 
@@ -162,6 +163,31 @@ right_encoder.enable(timestep)
 
 kalman_filters = [KalmanIR(q=1.0, r=50.0) for _ in range(8)]
 
+# -----------------------------------------------------------------------------
+# LOGGING CSV (registro de datos para evaluacion experimental / graficar_final.py)
+# -----------------------------------------------------------------------------
+scenario_label = wbt_filename.replace("escenario_", "").replace(".wbt", "")
+docs_dir = os.path.abspath(os.path.join(current_dir, '..', '..', 'docs'))
+os.makedirs(docs_dir, exist_ok=True)
+csv_path = os.path.join(docs_dir, f'datos_{scenario_label}.csv')
+csv_file = open(csv_path, 'w', newline='')
+csv_writer = csv.writer(csv_file)
+csv_writer.writerow(['tiempo_s', 'x_est', 'y_est', 'theta_deg', 'wp_restantes',
+                      'dist_wp', 'estado', 'crudo_m', 'kalman_m',
+                      'enc_izq_rad', 'enc_der_rad', 'long_ejecutada_m'])
+# Nota: 'crudo_m'/'kalman_m' son el valor IR del sensor frontal (ps0/ps7) en
+# unidades crudas del sensor, no en metros: el e-puck no entrega distancia.
+
+STATE_NAMES = {0: "TRACKING", 1: "REVERSING"}
+
+def log_row(estado_str, dist_wp_val, ir_raw_val, ir_kalman_val):
+    csv_writer.writerow([f"{robot.getTime():.3f}", f"{x_est:.4f}", f"{y_est:.4f}",
+                          f"{math.degrees(theta_est):.2f}",
+                          max(0, len(waypoints) - path_index), f"{dist_wp_val:.4f}",
+                          estado_str, f"{ir_raw_val:.1f}", f"{ir_kalman_val:.1f}",
+                          f"{cur_left:.5f}", f"{cur_right:.5f}",
+                          f"{actual_distance_traveled:.4f}"])
+
 grid_map = path_planning.create_map_from_wbt(wbt_path)
 
 waypoints, planned_length, raw_route = plan_route(grid_map, START, GOAL)
@@ -197,6 +223,8 @@ while robot.step(timestep) != -1:
     cur_right = right_encoder.getValue()
     raw_ir    = [sensor.getValue() for sensor in ps]
     filtered_ir = [kalman_filters[i].update(raw_ir[i]) for i in range(8)]
+    ir_front_raw    = max(raw_ir[0], raw_ir[7])
+    ir_front_kalman = max(filtered_ir[0], filtered_ir[7])
 
     dl = (cur_left  - prev_left)  * WHEEL_RADIUS
     dr = (cur_right - prev_right) * WHEEL_RADIUS
@@ -208,11 +236,13 @@ while robot.step(timestep) != -1:
     x_est, y_est, theta_est = update_odometry(x_est, y_est, theta_est, dl, dr)
 
     dist_goal = math.hypot(GOAL[0] - x_est, GOAL[1] - y_est)
-    
+    dist_wp_for_log = dist_goal
+
     if dist_goal < GOAL_TOL:
         left_motor.setVelocity(0.0)
         right_motor.setVelocity(0.0)
-        
+        log_row(STATE_NAMES[state], dist_wp_for_log, ir_front_raw, ir_front_kalman)
+
         print(f"\n[OK] Meta raggiunta con successo in pos=({x_est:.3f}, {y_est:.3f})")
         print("\n==================================================")
         print("[STATISTICHE FINALI]")
@@ -221,6 +251,7 @@ while robot.step(timestep) != -1:
         for i, obs in enumerate(detected_obstacles):
             print(f"  - Ostacolo {i+1} registrato in: ({obs[0]:.3f}, {obs[1]:.3f})")
         print("==================================================\n")
+        csv_file.close()
         break
 
     if state == STATE_TRACKING:
@@ -248,16 +279,20 @@ while robot.step(timestep) != -1:
             reverse_start_x = x_est
             reverse_start_y = y_est
             print("[AZIONE] Avvio retromarcia di sicurezza...")
+            log_row(STATE_NAMES[state], dist_wp_for_log, ir_front_raw, ir_front_kalman)
             continue
-            
+
         if path_planning.check_replanning(x_est, y_est, waypoints, path_index, max_deviation=0.12):
             waypoints, _, raw_route = plan_route(grid_map, (x_est, y_est), GOAL)
             path_index = 0
-            if not waypoints: continue
+            if not waypoints:
+                log_row(STATE_NAMES[state], dist_wp_for_log, ir_front_raw, ir_front_kalman)
+                continue
 
         path_index, target_index, (tx, ty) = path_planning.manage_waypoints(
             x_est, y_est, waypoints, path_index, LOOKAHEAD_DIST, WAYPOINT_REACHED
         )
+        dist_wp_for_log = math.hypot(tx - x_est, ty - y_est)
 
         dx, dy       = tx - x_est, ty - y_est
         target_angle = math.atan2(dy, dx)
@@ -299,3 +334,5 @@ while robot.step(timestep) != -1:
             path_index = 0
             state = STATE_TRACKING
             print("[AZIONE] Ripresa del tracking verso l'obiettivo.\n")
+
+    log_row(STATE_NAMES[state], dist_wp_for_log, ir_front_raw, ir_front_kalman)
