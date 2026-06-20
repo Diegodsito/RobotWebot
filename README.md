@@ -143,7 +143,7 @@ Datos completos paso a paso en `docs/datos_simple.csv` y `docs/datos_complejo.cs
 
 ### Video demostrativo
 
-> Pendiente de grabar y enlazar.
+https://drive.google.com/drive/folders/1AwFGcBConP3w4-eQSypk7exfpwdbg8Lq?usp=sharing
 
 ## Instrucciones para ejecutar
 
